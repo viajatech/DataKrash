@@ -6,6 +6,8 @@
 --------
 #Eres responsable del uso de este script si deseas usarlo y de las consecuencias legales que puede conllevar. 
 --------
+#Datakrash by Viaja Tech volvera corruptibles todos los datos que selecciones incluso un directorio completo, usalo con precaución y recuerda que eres responsable de los datos corruptos que ya no se volverán a recuperar.
+--------
 Deja tu estrella si usas mi script, gracias! 
 --------
 Redes sociales; @viajatech
