@@ -10,8 +10,8 @@
 #Se agredecido y dale estrella a este repositorio, gracias! 
 
 
-
-
+#pip install kivy
+#pip install plyer
 
 import os
 import random
